@@ -13,7 +13,7 @@ def configure_ai():
     return True
 
 import random
-from insults import INSULTS
+from insults import UKRAINIAN_INSULTS, SPECIAL_INSULTS
 
 # ... (configure_ai function remains the same)
 
@@ -26,8 +26,14 @@ async def analyze_drink(photo_bytes):
         
         image = Image.open(io.BytesIO(photo_bytes))
         
-        # Select a few random insults to inject into the context
-        selected_insults = ", ".join(random.sample(INSULTS, 3))
+        # Determine insult mix based on probability
+        # 40% chance to include special insults (Norwegian, Dutch, Hungarian)
+        if random.random() < 0.4:
+             # Take 2 special and 1 Ukrainian
+             selected_insults = ", ".join(random.sample(SPECIAL_INSULTS, 2) + random.sample(UKRAINIAN_INSULTS, 1))
+        else:
+             # Standard mix - just Ukrainian
+             selected_insults = ", ".join(random.sample(UKRAINIAN_INSULTS, 3))
         
         prompt = (
             "Ты — циничный, дерзкий и очень острый на язык барный критик. Твоя задача — жестко прожарить выбор напитка на фото. "
