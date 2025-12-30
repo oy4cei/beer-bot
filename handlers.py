@@ -7,8 +7,8 @@ import io
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Привет! Я Пивной Бот. 🍺\n"
-        "Пришли мне фото своего напитка, и я его учту!"
+        "Привіт! Я Пивний Бот. 🍺\n"
+        "Надішли мені фото свого напою, і я його врахую!"
     )
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -31,8 +31,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(
         f"{ai_comment}\n\n"
-        f"(Это твой {count}-й напиток в моем списке!)"
+        f"(Це твій {count}-й напій у моєму списку!)"
     )
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Лучше пришли фото пива! 📸")
+    await update.message.reply_text("Краще надішли фото пива! 📸")
