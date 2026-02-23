@@ -2,23 +2,24 @@ import os
 import google.generativeai as genai
 from PIL import Image
 import io
+import random
+from insults import UKRAINIAN_INSULTS, SPECIAL_INSULTS
+
+AI_CONFIGURED = False
 
 # Configure Gemini
 def configure_ai():
+    global AI_CONFIGURED
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         print("Warning: GEMINI_API_KEY not set.")
         return False
     genai.configure(api_key=api_key)
+    AI_CONFIGURED = True
     return True
 
-import random
-from insults import UKRAINIAN_INSULTS, SPECIAL_INSULTS
-
-# ... (configure_ai function remains the same)
-
 async def analyze_drink(photo_bytes):
-    if not configure_ai():
+    if not AI_CONFIGURED:
         return "Ех, мої нейронні мережі відключені. Не можу розгледіти, що там. Але впевнений, це щось смачне! (API Key missing)"
 
     try:
@@ -75,9 +76,10 @@ async def analyze_drink(photo_bytes):
             temperature=1.0,  # Increase creativity
         )
 
-        response = model.generate_content([prompt, image], generation_config=generation_config)
+        response = await model.generate_content_async([prompt, image], generation_config=generation_config)
         print(f"AI Response: {response.text}") # Log the response
         return response.text
     except Exception as e:
         print(f"AI Error: {e}")
         return "Щось у мене в очах помутніло... Не можу розгледіти етикетку. Напевно, палене!"
+
