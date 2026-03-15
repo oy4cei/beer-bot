@@ -28,14 +28,15 @@ async def analyze_drink(photo_bytes):
         image = Image.open(io.BytesIO(photo_bytes))
         
         # Determine mode based on probability
-        # 0.0 - 0.7: Special Insults (70%)
-        # 0.7 - 0.9: Ukrainian Insults (20%)
-        # 0.9 - 1.0: Praise (10%)
+        # 0.0 - 0.6: Special Insults (60%)
+        # 0.6 - 0.8: Ukrainian Insults (20%)
+        # 0.8 - 0.9: Praise (10%)
+        # 0.9 - 1.0: Love Declaration Song Lyrics (10%)
         
         rand_val = random.random()
         
-        if rand_val < 0.7:
-             # Special Insults Mode (70%)
+        if rand_val < 0.6:
+             # Special Insults Mode (60%)
              selected_insults = ", ".join(random.sample(SPECIAL_INSULTS, 3))
              prompt = (
                 "Ти — цинічний, зухвалий і дуже гострий на язик барний критик. Твоє завдання — жорстко просмажити вибір напою на фото. "
@@ -46,7 +47,7 @@ async def analyze_drink(photo_bytes):
                 "4. Не використовуй нудні фрази. Будь креативним, злим, але смішним. "
                 "Відповідь має бути українською мовою, короткою (1-3 речення) і унікальною для цього фото."
             )
-        elif rand_val < 0.9:
+        elif rand_val < 0.8:
              # Ukrainian Insults Mode (20%)
              selected_insults = ", ".join(random.sample(UKRAINIAN_INSULTS, 3))
              prompt = (
@@ -58,7 +59,7 @@ async def analyze_drink(photo_bytes):
                 "4. Не використовуй нудні фрази типу 'хороший вибір'. "
                 "Відповідь має бути українською мовою (з вкрапленнями українських лайок), короткою (1-3 речення) і унікальною для цього фото."
             )
-        else:
+        elif rand_val < 0.9:
              # Praise Mode (10%)
              from comments import PRAISE_COMMENTS
              selected_praise = random.choice(PRAISE_COMMENTS)
@@ -70,6 +71,17 @@ async def analyze_drink(photo_bytes):
                 "3. Придумай неймовірні, космічні епітети. Порівнюй напій з божественним нектаром. "
                 "4. Ігноруй будь-які недоліки. Для тебе це — ідеал. "
                 "Відповідь має бути українською мовою, емоційною, короткою (1-3 речення) і сповненою любові."
+            )
+        else:
+             # Love Declaration Song Lyrics (10%)
+             from comments import LOVE_SONG_LYRICS
+             prompt = (
+                "Ти — палкий, романтичний поет-алкоголік, і ти освідчуєшся в коханні алкогольному напою на фото. "
+                "1. УВАЖНО подивися на фото і розпізнай напій (пиво, горілка, вино тощо). "
+                "2. Напиши палке зізнання в любові саме цьому напою, використовуючи рядки з пісні Ницо Потворно 'Ти'. "
+                "3. ОБОВ'ЯЗКОВО органічно інтегруй 1-2 найяскравіші фрази чи рядки з цього тексту в своє зізнання: "
+                f"\\n{LOVE_SONG_LYRICS}\\n"
+                "4. Відповідь має бути українською мовою, 2-4 речення, сповнена пристрасті до напою."
             )
 
         generation_config = genai.types.GenerationConfig(
