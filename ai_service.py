@@ -1,4 +1,5 @@
 import os
+import asyncio
 import google.generativeai as genai
 from PIL import Image
 import io
@@ -88,9 +89,30 @@ async def analyze_drink(photo_bytes):
             temperature=1.0,  # Increase creativity
         )
 
-        response = await model.generate_content_async([prompt, image], generation_config=generation_config)
-        print(f"AI Response: {response.text}") # Log the response
-        return response.text
+        max_retries = 3
+        base_delay = 5
+        
+        for attempt in range(max_retries):
+            try:
+                response = await model.generate_content_async([prompt, image], generation_config=generation_config)
+                print(f"AI Response: {response.text}") # Log the response
+                return response.text
+            except Exception as e:
+                error_str = str(e).lower()
+                if "429" in error_str or "resource" in error_str or "exhausted" in error_str or "too many" in error_str or "quota" in error_str:
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        print(f"Rate limit hit, retrying in {delay} seconds (attempt {attempt + 1}/{max_retries})...")
+                        await asyncio.sleep(delay)
+                        continue
+                    else:
+                        print("Max retries reached for 429 Rate Limit.")
+                        return "Ой, забагато запитів! Дай мені хвилинку перевести подих... (API Rate Limit 429)"
+                else:
+                    print(f"AI Error: {e}")
+                    return "Щось у мене в очах помутніло... Не можу розгледіти етикетку. Напевно, палене!"
+                    
+        return "Щось пішло не так..."
     except Exception as e:
         print(f"AI Error: {e}")
         return "Щось у мене в очах помутніло... Не можу розгледіти етикетку. Напевно, палене!"
