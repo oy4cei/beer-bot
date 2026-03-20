@@ -24,7 +24,6 @@ async def analyze_drink(photo_bytes):
         return "Ех, мої нейронні мережі відключені. Не можу розгледіти, що там. Але впевнений, це щось смачне! (API Key missing)"
 
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash')
         
         image = Image.open(io.BytesIO(photo_bytes))
         
@@ -94,6 +93,8 @@ async def analyze_drink(photo_bytes):
         
         for attempt in range(max_retries):
             try:
+                # Use gemini-1.5-flash for much higher Free Tier quota (15 RPM, 1500 RPD)
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 response = await model.generate_content_async([prompt, image], generation_config=generation_config)
                 print(f"AI Response: {response.text}") # Log the response
                 return response.text
