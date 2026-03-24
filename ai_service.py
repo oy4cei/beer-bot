@@ -101,8 +101,8 @@ async def analyze_drink(photo_bytes):
         
         for attempt in range(max_retries):
             try:
-                # Use gemini-3.0-flash
-                model = genai.GenerativeModel('gemini-3.0-flash', safety_settings=safety_settings)
+                # Use gemini-3-flash-preview as per Google documentation
+                model = genai.GenerativeModel('gemini-3-flash-preview', safety_settings=safety_settings)
                 
                 # Wrap image in dict for more explicit SDK handling
                 content_list = [prompt, {"mime_type": "image/jpeg", "data": photo_bytes}]
