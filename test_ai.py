@@ -12,7 +12,7 @@ def test_gemini():
     genai.configure(api_key=API_KEY)
     
     try:
-        model = genai.GenerativeModel('gemini-3-flash-preview')
+        model = genai.GenerativeModel('gemini-3.0-flash')
         
         # Create a simple dummy image (red square) to test vision
         img = Image.new('RGB', (100, 100), color = 'red')
@@ -32,9 +32,13 @@ if __name__ == "__main__":
     import asyncio
     from ai_service import analyze_drink, configure_ai
 
-    # Set the key manually for the test if needed or ensure it's in env
+    # Ensure the key is in env
     if not os.environ.get("GEMINI_API_KEY"):
-        os.environ["GEMINI_API_KEY"] = "AIzaSyC7T-La1NtJzNvMJI1goOnIF_-RML48Kv0"
+        print("Error: GEMINI_API_KEY environment variable not set. Please set it or use a .env file.")
+        # Removed hardcoded key that was leaked
+        # os.environ["GEMINI_API_KEY"] = "..." 
+        import sys
+        sys.exit(1)
     
     print("Configuring AI...")
     configure_ai()

@@ -101,8 +101,8 @@ async def analyze_drink(photo_bytes):
         
         for attempt in range(max_retries):
             try:
-                # Use gemini-3-flash-preview for advanced reasoning
-                model = genai.GenerativeModel('gemini-3-flash-preview', safety_settings=safety_settings)
+                # Use gemini-3.0-flash
+                model = genai.GenerativeModel('gemini-3.0-flash', safety_settings=safety_settings)
                 
                 # Wrap image in dict for more explicit SDK handling
                 content_list = [prompt, {"mime_type": "image/jpeg", "data": photo_bytes}]
@@ -131,6 +131,10 @@ async def analyze_drink(photo_bytes):
                 else:
                     import traceback
                     traceback.print_exc()
+                    
+                    if "403" in error_str and "leaked" in error_str:
+                        return "Ой, мій API ключ забанили через витік! (Помилка 403: Key Leaked). Будь ласка, онови GEMINI_API_KEY у файлі .env."
+                        
                     return f"Щось у мене в очах помутніло... (Помилка: {str(e)[:100]})"
                     
         return "Щось пішло не так..."
