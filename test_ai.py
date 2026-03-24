@@ -30,19 +30,27 @@ def test_gemini():
 
 if __name__ == "__main__":
     import asyncio
-    from ai_service import analyze_drink
+    from ai_service import analyze_drink, configure_ai
+
+    # Set the key manually for the test if needed or ensure it's in env
+    if not os.environ.get("GEMINI_API_KEY"):
+        os.environ["GEMINI_API_KEY"] = "AIzaSyC7T-La1NtJzNvMJI1goOnIF_-RML48Kv0"
+    
+    print("Configuring AI...")
+    configure_ai()
 
     # Create a simple dummy image (red square)
-    img = Image.new('RGB', (100, 100), color = 'red')
+    img = Image.new('RGB', (224, 224), color = 'red')
     img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
+    img.save(img_byte_arr, format='JPEG') # JPEG is safer for vision
     img_bytes = img_byte_arr.getvalue()
 
-    print("Testing analyze_drink...")
+    print("Testing analyze_drink with dummy RED image...")
     try:
+        # Run the async function
         result = asyncio.run(analyze_drink(img_bytes))
-        print(f"Result:\n{result}")
+        print(f"\nFINAL RESULT:\n{result}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"\nFATAL TEST ERROR: {e}")
         import traceback
         traceback.print_exc()
