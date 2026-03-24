@@ -12,7 +12,7 @@ def test_gemini():
     genai.configure(api_key=API_KEY)
     
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-3-flash-preview')
         
         # Create a simple dummy image (red square) to test vision
         img = Image.new('RGB', (100, 100), color = 'red')
