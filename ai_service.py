@@ -88,18 +88,37 @@ async def analyze_drink(photo_bytes):
             temperature=1.0,  # Increase creativity
         )
 
+        # Safety settings to allow roasting without being blocked
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
+
         max_retries = 3
         base_delay = 5
         
         for attempt in range(max_retries):
             try:
-                # Use gemini-1.5-flash for much higher Free Tier quota (15 RPM, 1500 RPD)
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = await model.generate_content_async([prompt, image], generation_config=generation_config)
-                print(f"AI Response: {response.text}") # Log the response
+                # Use gemini-2.0-flash
+                model = genai.GenerativeModel('gemini-2.0-flash', safety_settings=safety_settings)
+                
+                # Wrap image in dict for more explicit SDK handling
+                content_list = [prompt, {"mime_type": "image/jpeg", "data": photo_bytes}]
+                
+                response = await model.generate_content_async(content_list, generation_config=generation_config)
+                
+                # Check if it was blocked
+                if not response.candidates:
+                    print(f"AI Blocked (no candidates). Feedback: {response.prompt_feedback}")
+                    return "Мої нейронні мережі почервоніли від сорому... Щось там дуже відверте або провокаційне на фото! 😉"
+                
+                print(f"AI Response success: {response.text}") 
                 return response.text
             except Exception as e:
                 error_str = str(e).lower()
+                print(f"AI Error on attempt {attempt+1}: {e}")
                 if "429" in error_str or "resource" in error_str or "exhausted" in error_str or "too many" in error_str or "quota" in error_str:
                     if attempt < max_retries - 1:
                         delay = base_delay * (2 ** attempt)
@@ -110,8 +129,9 @@ async def analyze_drink(photo_bytes):
                         print("Max retries reached for 429 Rate Limit.")
                         return "Ой, забагато запитів! Дай мені хвилинку перевести подих... (API Rate Limit 429)"
                 else:
-                    print(f"AI Error: {e}")
-                    return "Щось у мене в очах помутніло... Не можу розгледіти етикетку. Напевно, палене!"
+                    import traceback
+                    traceback.print_exc()
+                    return f"Щось у мене в очах помутніло... (Помилка: {str(e)[:100]})"
                     
         return "Щось пішло не так..."
     except Exception as e:
