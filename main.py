@@ -30,6 +30,7 @@ def main():
     application.add_handler(CommandHandler("top", handlers.top))
     application.add_handler(CommandHandler("stats", handlers.stats))
     application.add_handler(MessageHandler(filters.PHOTO, handlers.handle_photo))
+    application.add_handler(MessageHandler(filters.VOICE, handlers.handle_voice))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_text))
 
     print("Bot is running...")
