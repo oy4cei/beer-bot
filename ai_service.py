@@ -22,7 +22,7 @@ def configure_ai():
 
 async def analyze_drink(photo_bytes, todays_comments=None):
     if not AI_CONFIGURED:
-        return "Ех, мої нейронні мережі відключені. Не можу розгледіти, що там. Але впевнений, це щось смачне! (API Key missing)"
+        return "Ех, мої нейронні мережі відключені. Не можу розгледіти, що там. Але впевнений, це щось смачне! (API Key missing)", True
 
     try:
         
@@ -88,6 +88,8 @@ async def analyze_drink(photo_bytes, todays_comments=None):
         if todays_comments:
             prompt += f"\n\nВАЖЛИВО: Ти сьогодні вже відповідав такі коментарі: {todays_comments}. ОБОВ'ЯЗКОВО вигадай повністю унікальний текст. НЕ ПОВТОРЮЙ ЖОДНОЇ ФРАЗИ З ПОПЕРЕДНІХ КОМЕНТАРІВ! Будь максимально оригінальним."
 
+        prompt += "\n\nВ кінці своєї відповіді (на самому останньому рядку) обов'язково напиши одне слово: 'ALCOHOL' якщо на фото видно алкогольний напій (або щось схоже на нього), або 'NON_ALCOHOL' якщо це точно безалкогольне (чай, кава, вода, сік тощо)."
+
         generation_config = genai.types.GenerationConfig(
             temperature=1.0,  # Increase creativity
         )
@@ -116,10 +118,18 @@ async def analyze_drink(photo_bytes, todays_comments=None):
                 # Check if it was blocked
                 if not response.candidates:
                     print(f"AI Blocked (no candidates). Feedback: {response.prompt_feedback}")
-                    return "Мої нейронні мережі почервоніли від сорому... Щось там дуже відверте або провокаційне на фото! 😉"
+                    return "Мої нейронні мережі почервоніли від сорому... Щось там дуже відверте або провокаційне на фото! 😉", True
                 
-                print(f"AI Response success: {response.text}") 
-                return response.text
+                result_text = response.text
+                is_alcoholic = True
+                if "NON_ALCOHOL" in result_text:
+                    is_alcoholic = False
+                    result_text = result_text.replace("NON_ALCOHOL", "").strip()
+                elif "ALCOHOL" in result_text:
+                    result_text = result_text.replace("ALCOHOL", "").strip()
+
+                print(f"AI Response success: {result_text}") 
+                return result_text, is_alcoholic
             except Exception as e:
                 error_str = str(e).lower()
                 print(f"AI Error on attempt {attempt+1}: {e}")
@@ -131,20 +141,20 @@ async def analyze_drink(photo_bytes, todays_comments=None):
                         continue
                     else:
                         print("Max retries reached for 429 Rate Limit.")
-                        return "Ой, забагато запитів! Дай мені хвилинку перевести подих... (API Rate Limit 429)"
+                        return "Ой, забагато запитів! Дай мені хвилинку перевести подих... (API Rate Limit 429)", True
                 else:
                     import traceback
                     traceback.print_exc()
                     
                     if "403" in error_str and "leaked" in error_str:
-                        return "Ой, мій API ключ забанили через витік! (Помилка 403: Key Leaked). Будь ласка, онови GEMINI_API_KEY у файлі .env."
+                        return "Ой, мій API ключ забанили через витік! (Помилка 403: Key Leaked). Будь ласка, онови GEMINI_API_KEY у файлі .env.", True
                         
-                    return f"Щось у мене в очах помутніло... (Помилка: {str(e)[:100]})"
+                    return f"Щось у мене в очах помутніло... (Помилка: {str(e)[:100]})", True
                     
-        return "Щось пішло не так..."
+        return "Щось пішло не так...", True
     except Exception as e:
         print(f"AI Error: {e}")
-        return "Щось у мене в очах помутніло... Не можу розгледіти етикетку. Напевно, палене!"
+        return "Щось у мене в очах помутніло... Не можу розгледіти етикетку. Напевно, палене!", True
 
 
 async def analyze_sommelier_collection(drink_count: int, username: str) -> str:

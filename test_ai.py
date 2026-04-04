@@ -52,8 +52,8 @@ if __name__ == "__main__":
     print("Testing analyze_drink with dummy RED image...")
     try:
         # Run the async function
-        result = asyncio.run(analyze_drink(img_bytes))
-        print(f"\nFINAL RESULT:\n{result}")
+        result, is_alcoholic = asyncio.run(analyze_drink(img_bytes))
+        print(f"\nFINAL RESULT:\n{result}\nIs alcoholic: {is_alcoholic}")
     except Exception as e:
         print(f"\nFATAL TEST ERROR: {e}")
         import traceback

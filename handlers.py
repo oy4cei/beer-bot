@@ -48,7 +48,13 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Regular drink photo flow
     todays_comments = await database.get_todays_comments()
-    ai_comment = await ai_service.analyze_drink(raw_bytes, todays_comments)
+    ai_comment, is_alcoholic = await ai_service.analyze_drink(raw_bytes, todays_comments)
+    
+    if not is_alcoholic:
+        try:
+            await update.message.set_reaction(reaction="🤮")
+        except Exception:
+            pass
 
     await database.add_drink(user.id, user_name, ai_comment=ai_comment)
     count = await database.get_user_stats(user.id)
