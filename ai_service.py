@@ -5,7 +5,7 @@ from PIL import Image
 import io
 import random
 import base64
-from insults import UKRAINIAN_INSULTS, SPECIAL_INSULTS
+from insults import UKRAINIAN_INSULTS, SPECIAL_INSULTS, BALKAN_INSULTS, SPANISH_INSULTS, ARABIC_INSULTS, SCOTTISH_IRISH_INSULTS, BRITISH_INSULTS
 
 AI_CONFIGURED = False
 
@@ -20,7 +20,7 @@ def configure_ai():
     AI_CONFIGURED = True
     return True
 
-async def analyze_drink(photo_bytes):
+async def analyze_drink(photo_bytes, todays_comments=None):
     if not AI_CONFIGURED:
         return "Ех, мої нейронні мережі відключені. Не можу розгледіти, що там. Але впевнений, це щось смачне! (API Key missing)"
 
@@ -38,7 +38,7 @@ async def analyze_drink(photo_bytes):
         
         if rand_val < 0.6:
              # Special Insults Mode (60%)
-             selected_insults = ", ".join(random.sample(SPECIAL_INSULTS, 3))
+             selected_insults = ", ".join(random.sample(SPECIAL_INSULTS + BALKAN_INSULTS + SPANISH_INSULTS + ARABIC_INSULTS + SCOTTISH_IRISH_INSULTS + BRITISH_INSULTS, 3))
              prompt = (
                 "Ти — цинічний, зухвалий і дуже гострий на язик барний критик. Твоє завдання — жорстко просмажити вибір напою на фото. "
                 "1. УВАЖНО подивися на фото. Знайди назву бренду, тип напою, закуску або обстановку. "
@@ -84,6 +84,9 @@ async def analyze_drink(photo_bytes):
                 f"\\n{LOVE_SONG_LYRICS}\\n"
                 "4. Відповідь має бути українською мовою, 2-4 речення, сповнена пристрасті до напою."
             )
+
+        if todays_comments:
+            prompt += f"\n\nВАЖЛИВО: Ти сьогодні вже відповідав такі коментарі: {todays_comments}. ОБОВ'ЯЗКОВО вигадай повністю унікальний текст. НЕ ПОВТОРЮЙ ЖОДНОЇ ФРАЗИ З ПОПЕРЕДНІХ КОМЕНТАРІВ! Будь максимально оригінальним."
 
         generation_config = genai.types.GenerationConfig(
             temperature=1.0,  # Increase creativity
@@ -145,7 +148,7 @@ async def analyze_drink(photo_bytes):
 
 
 async def analyze_sommelier_collection(drink_count: int, username: str) -> str:
-    """Every 3 drinks: sarcastically roast the sommelier's taste and give them a ridiculous title."""
+    """Every 7 drinks: sarcastically roast the sommelier's taste and give them a ridiculous title."""
     if not AI_CONFIGURED:
         return "Мій алкогольний ИИ вирубився раніше, ніж ти встиг допити. (API Key missing)"
 

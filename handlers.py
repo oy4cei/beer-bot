@@ -47,9 +47,10 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Regular drink photo flow
-    ai_comment = await ai_service.analyze_drink(raw_bytes)
+    todays_comments = await database.get_todays_comments()
+    ai_comment = await ai_service.analyze_drink(raw_bytes, todays_comments)
 
-    await database.add_drink(user.id, user_name)
+    await database.add_drink(user.id, user_name, ai_comment=ai_comment)
     count = await database.get_user_stats(user.id)
 
     await update.message.reply_text(
@@ -57,8 +58,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"(Це твій {count}-й напій у моєму списку!)"
     )
 
-    # Every 3 drinks — roast the sommelier and award a title
-    if count % 3 == 0:
+    # Every 7 drinks — roast the sommelier and award a title
+    if count % 7 == 0:
         await update.message.reply_chat_action("typing")
         roast = await ai_service.analyze_sommelier_collection(count, user_name)
         await update.message.reply_text(
