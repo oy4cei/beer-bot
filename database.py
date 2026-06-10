@@ -18,6 +18,13 @@ def init_db():
         )
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS user_settings (
+            user_id INTEGER PRIMARY KEY,
+            bot_mode TEXT DEFAULT 'oldschool'
+        )
+    ''')
+
     try:
         cursor.execute('ALTER TABLE drinks ADD COLUMN ai_comment TEXT')
     except sqlite3.OperationalError:
@@ -62,3 +69,19 @@ async def get_todays_comments(limit=20):
         ''', (limit,)) as cursor:
             rows = await cursor.fetchall()
             return [row[0] for row in rows]
+
+async def get_user_mode(user_id):
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute('SELECT bot_mode FROM user_settings WHERE user_id = ?', (user_id,)) as cursor:
+            row = await cursor.fetchone()
+            return row[0] if row else 'oldschool'
+
+async def set_user_mode(user_id, mode):
+    async with aiosqlite.connect(DB_NAME) as db:
+        await db.execute('''
+            INSERT INTO user_settings (user_id, bot_mode)
+            VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET bot_mode = excluded.bot_mode
+        ''', (user_id, mode))
+        await db.commit()
+

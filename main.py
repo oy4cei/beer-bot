@@ -1,6 +1,6 @@
 import os
 import logging
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 import database
 import handlers
 import ai_service
@@ -27,11 +27,14 @@ def main():
     application = ApplicationBuilder().token(token).build()
 
     application.add_handler(CommandHandler("start", handlers.start))
+    application.add_handler(CommandHandler("menu", handlers.menu))
     application.add_handler(CommandHandler("top", handlers.top))
     application.add_handler(CommandHandler("stats", handlers.stats))
+    application.add_handler(CallbackQueryHandler(handlers.handle_menu_callback))
     application.add_handler(MessageHandler(filters.PHOTO, handlers.handle_photo))
     application.add_handler(MessageHandler(filters.VOICE, handlers.handle_voice))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_text))
+
 
     print("Bot is running...")
     application.run_polling()
